@@ -69,20 +69,20 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>D:\temp\OSB-plugin\obs-studio\libobs;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\temp\OSB-plugin\obs-studio\build\libobs\Debug;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(BOOST_ROOT)\;D:\temp\OSB-plugin\obs-studio\libobs;$(IncludePath)</IncludePath>
+    <LibraryPath>$(BOOST_ROOT)\stage\x64\lib;D:\temp\OSB-plugin\obs-studio\build\libobs\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>D:\temp\OSB-plugin\obs-studio\libobs;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\temp\OSB-plugin\obs-studio\build\libobs\Debug;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(BOOST_ROOT)\;D:\temp\OSB-plugin\obs-studio\libobs;$(IncludePath)</IncludePath>
+    <LibraryPath>$(BOOST_ROOT)\stage\x64\lib;D:\temp\OSB-plugin\obs-studio\build\libobs\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>D:\temp\OSB-plugin\obs-studio\libobs;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\temp\OSB-plugin\obs-studio\build\libobs\Debug;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(BOOST_ROOT)\;D:\temp\OSB-plugin\obs-studio\libobs;$(IncludePath)</IncludePath>
+    <LibraryPath>$(BOOST_ROOT)\stage\x64\lib;D:\temp\OSB-plugin\obs-studio\build\libobs\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>D:\temp\OSB-plugin\obs-studio\libobs;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\temp\OSB-plugin\obs-studio\build\libobs\Debug;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(BOOST_ROOT)\;D:\temp\OSB-plugin\obs-studio\libobs;$(IncludePath)</IncludePath>
+    <LibraryPath>$(BOOST_ROOT)\stage\x64\lib;D:\temp\OSB-plugin\obs-studio\build\libobs\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -93,6 +93,9 @@
     <Link>
       <AdditionalDependencies>D:\temp\OSB-plugin\obs-studio\build\libobs\Debug\obs.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>cmd /c copy /y "$(TargetPath)" "C:\Program Files (x86)\obs-studio\bin\64bit\obs-plugins\64bit"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -103,6 +106,9 @@
     <Link>
       <AdditionalDependencies>D:\temp\OSB-plugin\obs-studio\build\libobs\Debug\obs.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>cmd /c copy /y "$(TargetPath)" "C:\Program Files (x86)\obs-studio\bin\64bit\obs-plugins\64bit"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -117,6 +123,9 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>D:\temp\OSB-plugin\obs-studio\build\libobs\Debug\obs.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>cmd /c copy /y "$(TargetPath)" "C:\Program Files (x86)\obs-studio\bin\64bit\obs-plugins\64bit"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -131,6 +140,9 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>D:\temp\OSB-plugin\obs-studio\build\libobs\Debug\obs.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>cmd /c copy /y "$(TargetPath)" "C:\Program Files (x86)\obs-studio\bin\64bit\obs-plugins\64bit"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="auto_split.cpp" />
