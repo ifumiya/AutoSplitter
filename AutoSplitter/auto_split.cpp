@@ -3,22 +3,30 @@
 #include <fstream>
 #include <chrono>
 #include <thread>
+
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
+
 #include <obs-module.h>
 
 using namespace std;
 
 #ifdef _DEBUG
-#define OBLOG(...) blog(__VA_ARGS__)
+#define DLOG(...) blog(LOG_INFO,(string("AutoSplitter: ") + string(__VA_ARGS__)).c_str())
+#define FLOG(...) blog(LOG_INFO, (string("AutoSplitter: ") + (boost::format __VA_ARGS__).str()).c_str())
 #else
-#define OBLOG(...) __noop
+#define FLOG(...) __noop
+#define DLOG(...) __noop
 #endif
+
+
 
 thread plugin_main_thread;
 const chrono::milliseconds kWatchSpan = chrono::milliseconds(200);
 const string kSettingFilename = "/settings.txt";
 const vector<string> kOutputTypeTable{ "simple_file_output","adv_file_output","adv_ffmpeg_output" };
+
+
 
 void LoadSettings(chrono::milliseconds &split_span,bool enabled_stop,bool enabled_restart)
 {
@@ -32,9 +40,16 @@ void LoadSettings(chrono::milliseconds &split_span,bool enabled_stop,bool enable
 		ofstream ofs(filename);
 		ofs << true << endl; // enabled_stop
 		ofs << true << endl; // restart
-		ofs << 0 << endl; // hour
-		ofs << 10 << endl; // min
-		ofs << 0 << endl; //sec
+		ofs << 0 << endl;    // hour
+		ofs << 10 << endl;   // min
+		ofs << 0 << endl;    // sec
+		
+		ofs << "Enable(1) / Disable(0) this plugin" << endl;
+		ofs << "Enable(1) / Disable(0) restart recording" << endl;
+		ofs << "recording time (hours)" << endl;
+		ofs << "recording time (mins)" << endl;
+		ofs << "recording time (secs)" << endl;
+
 		ofs.close();
 	}
 
@@ -56,22 +71,22 @@ bool getActiveOutput(obs_output_t* &output)
 		output = obs_get_output_by_name(type_name.c_str());
 		if (obs_output_active(output)) return true;
 	}
-
 	return false;
 }
 
 void ThreadEntryPoint()
 {
+	DLOG("Watch thread is launched");
 	bool enabled_start = true;
 	bool enabled_restart = true;
 	chrono::milliseconds split_span;
 	LoadSettings(split_span, enabled_start, enabled_restart);
 
-	OBLOG(LOG_INFO,(boost::format("ASP: split span: %1%") % split_span.count()).str().c_str());
-	OBLOG(LOG_INFO,(boost::format("ASP: enabled start: %1%") % enabled_start).str().c_str());
+	FLOG(("span: %1% / act %2% / rst %3%") % split_span.count() % enabled_start % enabled_restart);
 
 	if (!enabled_start) return;
 	auto started_time = chrono::system_clock::now();
+
 	while (true)
 	{
 		obs_output_t* output;
@@ -91,6 +106,7 @@ void ThreadEntryPoint()
 			if (enabled_restart)
 				obs_output_start(output);
 		}
+		this_thread::sleep_for(kWatchSpan);
 	}
 
 }
