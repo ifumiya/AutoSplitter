@@ -6,6 +6,8 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/ini_parser.hpp>
 
 #include <obs-module.h>
 
@@ -23,44 +25,39 @@ using namespace std;
 
 thread plugin_main_thread;
 const chrono::milliseconds kWatchSpan = chrono::milliseconds(200);
-const string kSettingFilename = "/settings.txt";
+const string kSettingFilename = "/settings.ini";
 const vector<string> kOutputTypeTable{ "simple_file_output","adv_file_output","adv_ffmpeg_output" };
 
 
 
 void LoadSettings(chrono::milliseconds &split_span,bool enabled_stop,bool enabled_restart)
 {
-	
 	auto dir = obs_module_config_path(NULL);
 	auto filename = obs_module_config_path(kSettingFilename.c_str());
 	if (!boost::filesystem::exists(dir))
 		boost::filesystem::create_directories(boost::filesystem::path(dir));
 	if (!boost::filesystem::exists(filename))
 	{
-		ofstream ofs(filename);
-		ofs << true << endl; // enabled_stop
-		ofs << true << endl; // restart
-		ofs << 0 << endl;    // hour
-		ofs << 10 << endl;   // min
-		ofs << 0 << endl;    // sec
-		
-		ofs << "Enable(1) / Disable(0) this plugin" << endl;
-		ofs << "Enable(1) / Disable(0) restart recording" << endl;
-		ofs << "recording time (hours)" << endl;
-		ofs << "recording time (mins)" << endl;
-		ofs << "recording time (secs)" << endl;
+		boost::property_tree::ptree default_conf;
+		default_conf.put("feature.enable_stop", true);
+		default_conf.put("feature.enable_restart", true);
+		default_conf.put("split_timespan.hours", 0);
+		default_conf.put("split_timespan.minutes", 10);
+		default_conf.put("split_timespan.seconds", 0);
 
-		ofs.close();
+		boost::property_tree::write_ini(filename, default_conf);
 	}
+	
+	boost::property_tree::ptree conf;
+	boost::property_tree::read_ini(filename, conf);
 
 	int hour, min, sec;
-	ifstream ifs(filename);
-	ifs >> enabled_stop;
-	ifs >> enabled_restart;
-	ifs >> hour;
-	ifs >> min;
-	ifs >> sec;
-	ifs.close();
+	enabled_stop = conf.get<bool>("feature.enable_stop");
+	enabled_restart = conf.get<bool>("feature.enable_stop");
+	hour = conf.get<int>("split_timespan.hours");
+	min  = conf.get<int>("split_timespan.minutes");
+	sec  = conf.get<int>("split_timespan.seconds");
+
 	split_span = chrono::seconds(sec) + chrono::minutes(min) + chrono::hours(hour);
 }
 
@@ -157,7 +154,6 @@ void obs_module_unload(void)
 	plugin_main_thread.detach();
 	return;
 }
-
 
 const char* obs_module_author(void)
 {
