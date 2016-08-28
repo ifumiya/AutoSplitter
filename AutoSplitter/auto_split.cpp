@@ -64,14 +64,15 @@ void LoadSettings(chrono::milliseconds &split_span,bool enabled_stop,bool enable
 	split_span = chrono::seconds(sec) + chrono::minutes(min) + chrono::hours(hour);
 }
 
-bool getActiveOutput(obs_output_t* &output)
+obs_output_t* getActiveOutput()
 {
+	obs_output_t* output;
 	for (string type_name : kOutputTypeTable)
 	{
 		output = obs_get_output_by_name(type_name.c_str());
-		if (obs_output_active(output)) return true;
+		if (obs_output_active(output))return output;
 	}
-	return false;
+	return nullptr;
 }
 
 void ThreadEntryPoint()
@@ -86,26 +87,55 @@ void ThreadEntryPoint()
 
 	if (!enabled_start) return;
 	auto started_time = chrono::system_clock::now();
-
+	
+	string base_filename;
+	bool prev_active = false;
+	int split_count = 0;
 	while (true)
 	{
-		obs_output_t* output;
-		bool is_actived = getActiveOutput(output);
-		if (is_actived)
-			started_time = chrono::system_clock::now();
-
-		while(is_actived && ((chrono::system_clock::now() - started_time) < split_span))
+		obs_output_t* output = getActiveOutput();
+		bool is_active = obs_output_active(output);
+		if (is_active && !prev_active)
 		{
-			this_thread::sleep_for(kWatchSpan);
-			is_actived = obs_output_active(output);
+			// new record
+			started_time = chrono::system_clock::now();
+			split_count = 0;
+			auto out_settings = obs_output_get_settings(output);
+			base_filename = string(obs_data_get_string(out_settings, "path"));
+			FLOG(("set base filename (%1%)") % base_filename);
+			obs_data_release(out_settings);
 		}
 
-		if (is_actived)
+		while (is_active && ((chrono::system_clock::now() - started_time) < split_span))
+		{
+			// wait for split_span || wait until stop recording
+			this_thread::sleep_for(kWatchSpan);
+			is_active = obs_output_active(output);
+		}
+
+		if (is_active)
 		{
 			obs_output_stop(output);
+
 			if (enabled_restart)
+			{
+				split_count++;
+				auto split_count_str = (boost::format("%04d") % split_count).str();
+				auto new_path = boost::filesystem::path(base_filename);
+				new_path.replace_extension("_" + split_count_str + new_path.extension().string());
+				auto out_settings = obs_output_get_settings(output);
+				FLOG(("new filename (%1%)") % base_filename);
+
+				obs_data_set_string(out_settings, "path", (new_path.string().c_str()));
+				obs_output_update(output, out_settings);
+				obs_data_release(out_settings);
+
 				obs_output_start(output);
+				started_time = chrono::system_clock::now();
+			}
 		}
+		prev_active = is_active;
+		obs_output_release(output);
 		this_thread::sleep_for(kWatchSpan);
 	}
 
