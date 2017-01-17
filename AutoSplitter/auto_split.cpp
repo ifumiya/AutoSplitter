@@ -30,7 +30,7 @@ const vector<string> kOutputTypeTable{ "simple_file_output","adv_file_output","a
 
 
 
-void LoadSettings(chrono::milliseconds &split_span,bool enabled_stop,bool enabled_restart)
+void LoadSettings(chrono::milliseconds &split_span,bool &enabled_stop,bool &enabled_restart)
 {
 	auto dir = obs_module_config_path(NULL);
 	auto filename = obs_module_config_path(kSettingFilename.c_str());
@@ -59,6 +59,12 @@ void LoadSettings(chrono::milliseconds &split_span,bool enabled_stop,bool enable
 	sec  = conf.get<int>("split_timespan.seconds");
 
 	split_span = chrono::seconds(sec) + chrono::minutes(min) + chrono::hours(hour);
+
+	FLOG(
+		("LoadSettings [enable_stop = %1% , enable_restart = %2% , stime_timespan h/m/s = %3%/%4%/%5% total = %6%]")
+		% enabled_stop % enabled_restart
+		% hour % min % sec % split_span.count()
+	);
 }
 
 obs_output_t* getActiveOutput()
