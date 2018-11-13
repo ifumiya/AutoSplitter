@@ -53,7 +53,7 @@ void LoadSettings(chrono::milliseconds &split_span,bool &enabled_stop,bool &enab
 
 	int hour, min, sec;
 	enabled_stop = conf.get<bool>("feature.enable_stop");
-	enabled_restart = conf.get<bool>("feature.enable_stop");
+	enabled_restart = conf.get<bool>("feature.enable_restart");
 	hour = conf.get<int>("split_timespan.hours");
 	min  = conf.get<int>("split_timespan.minutes");
 	sec  = conf.get<int>("split_timespan.seconds");
